@@ -1,9 +1,9 @@
 /**
  * Module dependencies.
  */
-var initialize = require('../middleware/initialize')
-  , authenticate = require('../middleware/authenticate');
-  
+var initialize = require('../middleware/initialize'),
+  authenticate = require('../middleware/authenticate');
+
 /**
  * Framework support for Connect/Express.
  *
@@ -13,10 +13,9 @@ var initialize = require('../middleware/initialize')
  * @return {Object}
  * @api protected
  */
-exports = module.exports = function() {
-  
+exports = module.exports = function () {
   return {
     initialize: initialize,
-    authenticate: authenticate
+    authenticate: authenticate,
   };
 };

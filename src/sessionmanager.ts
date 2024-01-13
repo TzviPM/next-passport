@@ -6,31 +6,37 @@ function SessionManager(options, serializeUser) {
     options = undefined;
   }
   options = options || {};
-  
+
   this._key = options.key || 'passport';
   this._serializeUser = serializeUser;
 }
 
-SessionManager.prototype.logIn = function(req, user, options, cb) {
+SessionManager.prototype.logIn = function (req, user, options, cb) {
   if (typeof options == 'function') {
     cb = options;
     options = {};
   }
   options = options || {};
-  
-  if (!req.session) { return cb(new Error('Login sessions require session support. Did you forget to use `express-session` middleware?')); }
-  
+
+  if (!req.session) {
+    return cb(
+      new Error(
+        'Login sessions require session support. Did you forget to use `express-session` middleware?',
+      ),
+    );
+  }
+
   var self = this;
   var prevSession = req.session;
-  
+
   // regenerate the session, which is good practice to help
   // guard against forms of session fixation
-  req.session.regenerate(function(err) {
+  req.session.regenerate(function (err) {
     if (err) {
       return cb(err);
     }
-    
-    self._serializeUser(user, req, function(err, obj) {
+
+    self._serializeUser(user, req, function (err, obj) {
       if (err) {
         return cb(err);
       }
@@ -44,7 +50,7 @@ SessionManager.prototype.logIn = function(req, user, options, cb) {
       req.session[self._key].user = obj;
       // save the session before redirection to ensure page
       // load does not happen before session is saved
-      req.session.save(function(err) {
+      req.session.save(function (err) {
         if (err) {
           return cb(err);
         }
@@ -52,19 +58,25 @@ SessionManager.prototype.logIn = function(req, user, options, cb) {
       });
     });
   });
-}
+};
 
-SessionManager.prototype.logOut = function(req, options, cb) {
+SessionManager.prototype.logOut = function (req, options, cb) {
   if (typeof options == 'function') {
     cb = options;
     options = {};
   }
   options = options || {};
-  
-  if (!req.session) { return cb(new Error('Login sessions require session support. Did you forget to use `express-session` middleware?')); }
-  
+
+  if (!req.session) {
+    return cb(
+      new Error(
+        'Login sessions require session support. Did you forget to use `express-session` middleware?',
+      ),
+    );
+  }
+
   var self = this;
-  
+
   // clear the user from the session object and save.
   // this will ensure that re-using the old session id
   // does not have a logged in user
@@ -72,15 +84,15 @@ SessionManager.prototype.logOut = function(req, options, cb) {
     delete req.session[this._key].user;
   }
   var prevSession = req.session;
-  
-  req.session.save(function(err) {
+
+  req.session.save(function (err) {
     if (err) {
-      return cb(err)
+      return cb(err);
     }
-  
+
     // regenerate the session, which is good practice to help
     // guard against forms of session fixation
-    req.session.regenerate(function(err) {
+    req.session.regenerate(function (err) {
       if (err) {
         return cb(err);
       }
@@ -90,7 +102,6 @@ SessionManager.prototype.logOut = function(req, options, cb) {
       cb();
     });
   });
-}
-
+};
 
 module.exports = SessionManager;

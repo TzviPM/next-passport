@@ -1,7 +1,7 @@
 // Module dependencies.
-var pause = require("pause"),
-  util = require("util"),
-  Strategy = require("passport-strategy");
+var pause = require('pause'),
+  util = require('util'),
+  Strategy = require('passport-strategy');
 
 /**
  *  Create a new `SessionStrategy` object.
@@ -39,7 +39,7 @@ var pause = require("pause"),
  * @param {function} deserializeUser - Function which deserializes user.
  */
 function SessionStrategy(options, deserializeUser) {
-  if (typeof options == "function") {
+  if (typeof options == 'function') {
     deserializeUser = options;
     options = undefined;
   }
@@ -52,8 +52,8 @@ function SessionStrategy(options, deserializeUser) {
    * @type {string}
    * @readonly
    */
-  this.name = "session";
-  this._key = options.key || "passport";
+  this.name = 'session';
+  this._key = options.key || 'passport';
   this._deserializeUser = deserializeUser;
 }
 
@@ -96,8 +96,8 @@ SessionStrategy.prototype.authenticate = function (req, options) {
   if (!req.session) {
     return this.error(
       new Error(
-        "Login sessions require session support. Did you forget to use `express-session` middleware?"
-      )
+        'Login sessions require session support. Did you forget to use `express-session` middleware?',
+      ),
     );
   }
   options = options || {};
@@ -121,7 +121,7 @@ SessionStrategy.prototype.authenticate = function (req, options) {
       if (!user) {
         delete req.session[self._key].user;
       } else {
-        var property = req._userProperty || "user";
+        var property = req._userProperty || 'user';
         req[property] = user;
       }
       self.pass();

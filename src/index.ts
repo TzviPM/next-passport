@@ -1,7 +1,6 @@
 // Module dependencies.
-var Passport = require('./authenticator')
-  , SessionStrategy = require('./strategies/session');
-
+var Passport = require('./authenticator'),
+  SessionStrategy = require('./strategies/session');
 
 /**
  * Export default singleton.
@@ -13,8 +12,7 @@ exports = module.exports = new Passport();
 /**
  * Expose constructors.
  */
-exports.Passport =
-exports.Authenticator = Passport;
+exports.Passport = exports.Authenticator = Passport;
 exports.Strategy = require('passport-strategy');
 
 /*

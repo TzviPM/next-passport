@@ -1,7 +1,6 @@
 // Module dependencies.
-var SessionStrategy = require('./strategies/session')
-  , SessionManager = require('./sessionmanager');
-
+var SessionStrategy = require('./strategies/session'),
+  SessionManager = require('./sessionmanager');
 
 /**
  * Create a new `Authenticator` object.
@@ -16,7 +15,7 @@ function Authenticator() {
   this._deserializers = [];
   this._infoTransformers = [];
   this._framework = null;
-  
+
   this.init();
 }
 
@@ -30,10 +29,15 @@ function Authenticator() {
  *
  * @private
  */
-Authenticator.prototype.init = function() {
+Authenticator.prototype.init = function () {
   this.framework(require('./framework/connect')());
-  this.use(new SessionStrategy({ key: this._key }, this.deserializeUser.bind(this)));
-  this._sm = new SessionManager({ key: this._key }, this.serializeUser.bind(this));
+  this.use(
+    new SessionStrategy({key: this._key}, this.deserializeUser.bind(this)),
+  );
+  this._sm = new SessionManager(
+    {key: this._key},
+    this.serializeUser.bind(this),
+  );
 };
 
 /**
@@ -54,13 +58,15 @@ Authenticator.prototype.init = function() {
  *   // ...
  * }));
  */
-Authenticator.prototype.use = function(name, strategy) {
+Authenticator.prototype.use = function (name, strategy) {
   if (!strategy) {
     strategy = name;
     name = strategy.name;
   }
-  if (!name) { throw new Error('Authentication strategies must have a name'); }
-  
+  if (!name) {
+    throw new Error('Authentication strategies must have a name');
+  }
+
   this._strategies[name] = strategy;
   return this;
 };
@@ -79,7 +85,7 @@ Authenticator.prototype.use = function(name, strategy) {
  * @example
  * passport.unuse('acme');
  */
-Authenticator.prototype.unuse = function(name) {
+Authenticator.prototype.unuse = function (name) {
   delete this._strategies[name];
   return this;
 };
@@ -95,7 +101,7 @@ Authenticator.prototype.unuse = function(name) {
  * @param {Object} fw
  * @returns {this}
  */
-Authenticator.prototype.framework = function(fw) {
+Authenticator.prototype.framework = function (fw) {
   this._framework = fw;
   return this;
 };
@@ -126,7 +132,7 @@ Authenticator.prototype.framework = function(fw) {
  * @example
  * app.use(passport.initialize());
  */
-Authenticator.prototype.initialize = function(options) {
+Authenticator.prototype.initialize = function (options) {
   options = options || {};
   return this._framework.initialize(this, options);
 };
@@ -168,7 +174,7 @@ Authenticator.prototype.initialize = function(options) {
  * @example <caption>Authenticate bearer token used to access an API resource.</caption>
  * app.get('/api/resource', passport.authenticate('bearer', { session: false }));
  */
-Authenticator.prototype.authenticate = function(strategy, options, callback) {
+Authenticator.prototype.authenticate = function (strategy, options, callback) {
   return this._framework.authenticate(this, strategy, options, callback);
 };
 
@@ -200,10 +206,10 @@ Authenticator.prototype.authenticate = function(strategy, options, callback) {
  * @example
  * app.get('/oauth/callback/twitter', passport.authorize('twitter'));
  */
-Authenticator.prototype.authorize = function(strategy, options, callback) {
+Authenticator.prototype.authorize = function (strategy, options, callback) {
   options = options || {};
   options.assignProperty = 'account';
-  
+
   var fn = this._framework.authorize || this._framework.authenticate;
   return fn(this, strategy, options, callback);
 };
@@ -244,7 +250,7 @@ Authenticator.prototype.authorize = function(strategy, options, callback) {
  * @return {Function} middleware
  * @api public
  */
-Authenticator.prototype.session = function(options) {
+Authenticator.prototype.session = function (options) {
   return this.authenticate('session', options);
 };
 
@@ -267,11 +273,11 @@ Authenticator.prototype.sessionManager = function(mgr) {
  *
  * @api public
  */
-Authenticator.prototype.serializeUser = function(fn, req, done) {
+Authenticator.prototype.serializeUser = function (fn, req, done) {
   if (typeof fn === 'function') {
     return this._serializers.push(fn);
   }
-  
+
   // private implementation that traverses the chain of serializers, attempting
   // to serialize a user
   var user = fn;
@@ -281,7 +287,7 @@ Authenticator.prototype.serializeUser = function(fn, req, done) {
     done = req;
     req = undefined;
   }
-  
+
   var stack = this._serializers;
   (function pass(i, err, obj) {
     // serializers use 'pass' as an error to skip processing
@@ -289,18 +295,19 @@ Authenticator.prototype.serializeUser = function(fn, req, done) {
       err = undefined;
     }
     // an error or serialized object was obtained, done
-    if (err || obj || obj === 0) { return done(err, obj); }
-    
+    if (err || obj || obj === 0) {
+      return done(err, obj);
+    }
+
     var layer = stack[i];
     if (!layer) {
       return done(new Error('Failed to serialize user into session'));
     }
-    
-    
+
     function serialized(e, o) {
       pass(i + 1, e, o);
     }
-    
+
     try {
       var arity = layer.length;
       if (arity == 3) {
@@ -308,7 +315,7 @@ Authenticator.prototype.serializeUser = function(fn, req, done) {
       } else {
         layer(user, serialized);
       }
-    } catch(e) {
+    } catch (e) {
       return done(e);
     }
   })(0);
@@ -327,11 +334,11 @@ Authenticator.prototype.serializeUser = function(fn, req, done) {
  *
  * @api public
  */
-Authenticator.prototype.deserializeUser = function(fn, req, done) {
+Authenticator.prototype.deserializeUser = function (fn, req, done) {
   if (typeof fn === 'function') {
     return this._deserializers.push(fn);
   }
-  
+
   // private implementation that traverses the chain of deserializers,
   // attempting to deserialize a user
   var obj = fn;
@@ -341,7 +348,7 @@ Authenticator.prototype.deserializeUser = function(fn, req, done) {
     done = req;
     req = undefined;
   }
-  
+
   var stack = this._deserializers;
   (function pass(i, err, user) {
     // deserializers use 'pass' as an error to skip processing
@@ -349,21 +356,24 @@ Authenticator.prototype.deserializeUser = function(fn, req, done) {
       err = undefined;
     }
     // an error or deserialized user was obtained, done
-    if (err || user) { return done(err, user); }
+    if (err || user) {
+      return done(err, user);
+    }
     // a valid user existed when establishing the session, but that user has
     // since been removed
-    if (user === null || user === false) { return done(null, false); }
-    
+    if (user === null || user === false) {
+      return done(null, false);
+    }
+
     var layer = stack[i];
     if (!layer) {
       return done(new Error('Failed to deserialize user out of session'));
     }
-    
-    
+
     function deserialized(e, u) {
       pass(i + 1, e, u);
     }
-    
+
     try {
       var arity = layer.length;
       if (arity == 3) {
@@ -371,7 +381,7 @@ Authenticator.prototype.deserializeUser = function(fn, req, done) {
       } else {
         layer(obj, deserialized);
       }
-    } catch(e) {
+    } catch (e) {
       return done(e);
     }
   })(0);
@@ -415,11 +425,11 @@ Authenticator.prototype.deserializeUser = function(fn, req, done) {
  *
  * @api public
  */
-Authenticator.prototype.transformAuthInfo = function(fn, req, done) {
+Authenticator.prototype.transformAuthInfo = function (fn, req, done) {
   if (typeof fn === 'function') {
     return this._infoTransformers.push(fn);
   }
-  
+
   // private implementation that traverses the chain of transformers,
   // attempting to transform auth info
   var info = fn;
@@ -429,7 +439,7 @@ Authenticator.prototype.transformAuthInfo = function(fn, req, done) {
     done = req;
     req = undefined;
   }
-  
+
   var stack = this._infoTransformers;
   (function pass(i, err, tinfo) {
     // transformers use 'pass' as an error to skip processing
@@ -437,20 +447,21 @@ Authenticator.prototype.transformAuthInfo = function(fn, req, done) {
       err = undefined;
     }
     // an error or transformed info was obtained, done
-    if (err || tinfo) { return done(err, tinfo); }
-    
+    if (err || tinfo) {
+      return done(err, tinfo);
+    }
+
     var layer = stack[i];
     if (!layer) {
       // if no transformers are registered (or they all pass), the default
       // behavior is to use the un-transformed info as-is
       return done(null, info);
     }
-    
-    
+
     function transformed(e, t) {
       pass(i + 1, e, t);
     }
-    
+
     try {
       var arity = layer.length;
       if (arity == 1) {
@@ -462,23 +473,22 @@ Authenticator.prototype.transformAuthInfo = function(fn, req, done) {
       } else {
         layer(info, transformed);
       }
-    } catch(e) {
+    } catch (e) {
       return done(e);
     }
   })(0);
 };
 
 /**
- * Return strategy with given `name`. 
+ * Return strategy with given `name`.
  *
  * @param {String} name
  * @return {Strategy}
  * @api private
  */
-Authenticator.prototype._strategy = function(name) {
+Authenticator.prototype._strategy = function (name) {
   return this._strategies[name];
 };
-
 
 /**
  * Expose `Authenticator`.

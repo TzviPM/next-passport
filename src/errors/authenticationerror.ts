@@ -15,6 +15,5 @@ function AuthenticationError(message, status) {
 // Inherit from `Error`.
 AuthenticationError.prototype.__proto__ = Error.prototype;
 
-
 // Expose constructor.
 module.exports = AuthenticationError;

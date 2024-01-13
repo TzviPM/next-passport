@@ -1,7 +1,7 @@
 /**
  * Module dependencies.
  */
-var IncomingMessageExt = require("../http/request");
+var IncomingMessageExt = require('../http/request');
 
 /**
  * Passport initialization.
@@ -88,7 +88,7 @@ module.exports = function initialize(passport, options) {
       // [2]: https://github.com/TzviPM/next-passport/blob/v0.4.1/lib/http/request.js
       // [3]: https://github.com/TzviPM/next-passport/blob/v0.5.1/lib/middleware/authenticate.js#L96
       // [4]: https://github.com/TzviPM/next-passport/issues/877
-      passport._userProperty = options.userProperty || "user";
+      passport._userProperty = options.userProperty || 'user';
 
       req._passport = {};
       req._passport.instance = passport;

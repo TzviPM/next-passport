@@ -1,4 +1,4 @@
-var req = exports = module.exports = {};
+var req = (exports = module.exports = {});
 
 /**
  * Initiate a login session for `user`.
@@ -20,24 +20,28 @@ var req = exports = module.exports = {};
  * @param {Function} done
  * @api public
  */
-req.login =
-req.logIn = function(user, options, done) {
+req.login = req.logIn = function (user, options, done) {
   if (typeof options == 'function') {
     done = options;
     options = {};
   }
   options = options || {};
-  
+
   var property = this._userProperty || 'user';
-  var session = (options.session === undefined) ? true : options.session;
-  
+  var session = options.session === undefined ? true : options.session;
+
   this[property] = user;
   if (session && this._sessionManager) {
-    if (typeof done != 'function') { throw new Error('req#login requires a callback function'); }
-    
+    if (typeof done != 'function') {
+      throw new Error('req#login requires a callback function');
+    }
+
     var self = this;
-    this._sessionManager.logIn(this, user, options, function(err) {
-      if (err) { self[property] = null; return done(err); }
+    this._sessionManager.logIn(this, user, options, function (err) {
+      if (err) {
+        self[property] = null;
+        return done(err);
+      }
       done();
     });
   } else {
@@ -50,20 +54,21 @@ req.logIn = function(user, options, done) {
  *
  * @api public
  */
-req.logout =
-req.logOut = function(options, done) {
+req.logout = req.logOut = function (options, done) {
   if (typeof options == 'function') {
     done = options;
     options = {};
   }
   options = options || {};
-  
+
   var property = this._userProperty || 'user';
-  
+
   this[property] = null;
   if (this._sessionManager) {
-    if (typeof done != 'function') { throw new Error('req#logout requires a callback function'); }
-    
+    if (typeof done != 'function') {
+      throw new Error('req#logout requires a callback function');
+    }
+
     this._sessionManager.logOut(this, options, done);
   } else {
     done && done();
@@ -76,9 +81,9 @@ req.logOut = function(options, done) {
  * @return {Boolean}
  * @api public
  */
-req.isAuthenticated = function() {
+req.isAuthenticated = function () {
   var property = this._userProperty || 'user';
-  return (this[property]) ? true : false;
+  return this[property] ? true : false;
 };
 
 /**
@@ -87,6 +92,6 @@ req.isAuthenticated = function() {
  * @return {Boolean}
  * @api public
  */
-req.isUnauthenticated = function() {
+req.isUnauthenticated = function () {
   return !this.isAuthenticated();
 };
