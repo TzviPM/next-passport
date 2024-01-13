@@ -1,21 +1,15 @@
-/**
- * Module dependencies.
- */
-var initialize = require('../middleware/initialize'),
-  authenticate = require('../middleware/authenticate');
+import {authenticate} from '../middleware/authenticate';
+import {initialize} from '../middleware/initialize';
 
 /**
  * Framework support for Connect/Express.
  *
  * This module provides support for using Passport with Express.  It exposes
  * middleware that conform to the `fn(req, res, next)` signature.
- *
- * @return {Object}
- * @api protected
  */
-exports = module.exports = function () {
+export function connectFramework() {
   return {
-    initialize: initialize,
-    authenticate: authenticate,
+    initialize,
+    authenticate,
   };
-};
+}

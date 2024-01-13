@@ -1,7 +1,11 @@
-/**
- * Module dependencies.
- */
-var IncomingMessageExt = require('../http/request');
+import {Authenticator} from '../authenticator';
+import {IncomingMessageExt} from '../http/request';
+import {MiddlewareFunction} from './types';
+
+export interface InitializeOptions {
+  userProperty?: string;
+  compat?: boolean;
+}
 
 /**
  * Passport initialization.
@@ -44,18 +48,21 @@ var IncomingMessageExt = require('../http/request');
  * @return {Function}
  * @api public
  */
-module.exports = function initialize(passport, options) {
+function initialize(
+  passport: Authenticator,
+  options: InitializeOptions,
+): MiddlewareFunction {
   options = options || {};
 
   return function initialize(req, res, next) {
-    req.login = req.logIn = req.logIn || IncomingMessageExt.logIn;
-    req.logout = req.logOut = req.logOut || IncomingMessageExt.logOut;
+    req.login = req.logIn = req.logIn || IncomingMessageExt.prototype.logIn;
+    req.logout = req.logOut = req.logOut || IncomingMessageExt.prototype.logOut;
     req.isAuthenticated =
-      req.isAuthenticated || IncomingMessageExt.isAuthenticated;
+      req.isAuthenticated || IncomingMessageExt.prototype.isAuthenticated;
     req.isUnauthenticated =
-      req.isUnauthenticated || IncomingMessageExt.isUnauthenticated;
+      req.isUnauthenticated || IncomingMessageExt.prototype.isUnauthenticated;
 
-    req._sessionManager = passport._sm;
+    req._sessionManager = passport._sessionManager;
 
     if (options.userProperty) {
       req._userProperty = options.userProperty;
@@ -88,7 +95,7 @@ module.exports = function initialize(passport, options) {
       // [2]: https://github.com/TzviPM/next-passport/blob/v0.4.1/lib/http/request.js
       // [3]: https://github.com/TzviPM/next-passport/blob/v0.5.1/lib/middleware/authenticate.js#L96
       // [4]: https://github.com/TzviPM/next-passport/issues/877
-      passport._userProperty = options.userProperty || 'user';
+      (passport as any)._userProperty = options.userProperty || 'user';
 
       req._passport = {};
       req._passport.instance = passport;
@@ -96,4 +103,6 @@ module.exports = function initialize(passport, options) {
 
     next();
   };
-};
+}
+
+export {initialize};
