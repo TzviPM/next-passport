@@ -15,7 +15,7 @@ rather than filing an issue.
 #### Is this a security issue?
 
 Do not open issues that might have security implications.  Potential security
-vulnerabilities should be reported privately to jaredhanson@gmail.com.  Once any
+vulnerabilities should be reported privately to TzviPM@gmail.com.  Once any
 vulerabilities have been repaired, the details will be disclosed publicly in a
 responsible manner.  This also allows time for coordinating with affected parties
 in order to mitigate negative consequences.

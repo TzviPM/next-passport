@@ -1,8 +1,8 @@
 ## Gold Sponsors
 
-[![WorkOS](https://raw.githubusercontent.com/jaredhanson/passport/master/sponsors/workos.png)](https://workos.com/)
+[![WorkOS](https://raw.githubusercontent.com/TzviPM/next-passport/main/sponsors/workos.png)](https://workos.com/)
 <br>
-[![Snyk](https://raw.githubusercontent.com/jaredhanson/passport/master/sponsors/snyk.png)](https://snyk.io/)
+[![Snyk](https://raw.githubusercontent.com/TzviPM/next-passport/main/sponsors/snyk.png)](https://snyk.io/)
 
 ## Sponsors
 

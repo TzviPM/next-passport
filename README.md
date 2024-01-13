@@ -1,52 +1,20 @@
-[![passport banner](http://cdn.auth0.com/img/passport-banner-github.png)](http://passportjs.org)
+# next-passport
 
-# Passport
+Based on the famous [passport](https://github.com/jaredhanson/passport) library by Jared Hanson.
 
-Passport is [Express](http://expressjs.com/)-compatible authentication
-middleware for [Node.js](http://nodejs.org/).
+NextPassport aims to answer the question:
 
-Passport's sole purpose is to authenticate requests, which it does through an
-extensible set of plugins known as _strategies_.  Passport does not mount
-routes or assume any particular database schema, which maximizes flexibility and
-allows application-level decisions to be made by the developer.  The API is
-simple: you provide Passport a request to authenticate, and Passport provides
-hooks for controlling what occurs when authentication succeeds or fails.
-
----
-
-<p align="center">
-  <sup>Sponsors</sup>
-  <br>
-  <a href="https://workos.com/?utm_campaign=github_repo&utm_medium=referral&utm_content=passport_js&utm_source=github"><img src="https://raw.githubusercontent.com/jaredhanson/passport/master/sponsors/workos.png"></a><br/>
-  <a href="https://workos.com/?utm_campaign=github_repo&utm_medium=referral&utm_content=passport_js&utm_source=github"><b>Your app, enterprise-ready.</b><br/>Start selling to enterprise customers with just a few lines of code. Add Single Sign-On (and more) in minutes instead of months.</a>
-  <br>
-  <br>
-  <a href="https://www.descope.com/?utm_source=PassportJS&utm_medium=referral&utm_campaign=oss-sponsorship">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/jaredhanson/passport/master/sponsors/descope-dark.svg">
-      <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/jaredhanson/passport/master/sponsors/descope.svg">
-      <img src="https://raw.githubusercontent.com/jaredhanson/passport/master/sponsors/descope.svg" width="275">
-    </picture>
-  </a><br/>
-  <a href="https://www.descope.com/?utm_source=PassportJS&utm_medium=referral&utm_campaign=oss-sponsorship"><b>Drag and drop your auth</b><br/>Add authentication and user management to your consumer and business apps with a few lines of code.</a>
-  <br>
-  <br>
-  <a href="https://fusionauth.io/?utm_source=passportjs&utm_medium=referral&utm_campaign=sponsorship"><img src="https://raw.githubusercontent.com/jaredhanson/passport/master/sponsors/fusionauth.png" width="275"></a><br/>
-  <a href="https://fusionauth.io/?utm_source=passportjs&utm_medium=referral&utm_campaign=sponsorship"><b>Auth. Built for Devs, by Devs</b><br/>Add login, registration, SSO, MFA, and a bazillion other features to your app in minutes. Integrates with any codebase and installs on any server, anywhere in the world.</a>
-</p>
-
----
+> what could an awesome authentication library look like for NextJS?
 
 Status:
-[![Build](https://travis-ci.org/jaredhanson/passport.svg?branch=master)](https://travis-ci.org/jaredhanson/passport)
-[![Coverage](https://coveralls.io/repos/jaredhanson/passport/badge.svg?branch=master)](https://coveralls.io/r/jaredhanson/passport)
-[![Dependencies](https://david-dm.org/jaredhanson/passport.svg)](https://david-dm.org/jaredhanson/passport)
-
+[![Build](https://travis-ci.org/TzviPM/next-passport.svg?branch=main)](https://travis-ci.org/TzviPM/next-passport)
+[![Coverage](https://coveralls.io/repos/TzviPM/next-passport/badge.svg?branch=main)](https://coveralls.io/r/TzviPM/next-passport)
+[![Dependencies](https://david-dm.org/TzviPM/next-passport.svg)](https://david-dm.org/TzviPM/next-passport)
 
 ## Install
 
 ```
-$ npm install passport
+$ npm install @tzvipm.dev/next-passport
 ```
 
 ## Usage
@@ -144,19 +112,19 @@ The following table lists commonly used strategies:
 
 |Strategy                                                       | Protocol                 |Developer                                       |
 |---------------------------------------------------------------|--------------------------|------------------------------------------------|
-|[Local](https://github.com/jaredhanson/passport-local)         | HTML form                |[Jared Hanson](https://github.com/jaredhanson)  |
-|[OpenID](https://github.com/jaredhanson/passport-openid)       | OpenID                   |[Jared Hanson](https://github.com/jaredhanson)  |
-|[BrowserID](https://github.com/jaredhanson/passport-browserid) | BrowserID                |[Jared Hanson](https://github.com/jaredhanson)  |
-|[Facebook](https://github.com/jaredhanson/passport-facebook)   | OAuth 2.0                |[Jared Hanson](https://github.com/jaredhanson)  |
-|[Google](https://github.com/jaredhanson/passport-google)       | OpenID                   |[Jared Hanson](https://github.com/jaredhanson)  |
-|[Google](https://github.com/jaredhanson/passport-google-oauth) | OAuth / OAuth 2.0        |[Jared Hanson](https://github.com/jaredhanson)  |
-|[Twitter](https://github.com/jaredhanson/passport-twitter)     | OAuth                    |[Jared Hanson](https://github.com/jaredhanson)  |
+|[Local](https://github.com/TzviPM/next-passport-local)         | HTML form                |[TzviPM](https://github.com/TzviPM)  |
+|[OpenID](https://github.com/TzviPM/next-passport-openid)       | OpenID                   |[TzviPM](https://github.com/TzviPM)  |
+|[BrowserID](https://github.com/TzviPM/next-passport-browserid) | BrowserID                |[TzviPM](https://github.com/TzviPM)  |
+|[Facebook](https://github.com/TzviPM/next-passport-facebook)   | OAuth 2.0                |[TzviPM](https://github.com/TzviPM)  |
+|[Google](https://github.com/TzviPM/next-passport-google)       | OpenID                   |[TzviPM](https://github.com/TzviPM)  |
+|[Google](https://github.com/TzviPM/next-passport-google-oauth) | OAuth / OAuth 2.0        |[TzviPM](https://github.com/TzviPM)  |
+|[Twitter](https://github.com/TzviPM/next-passport-twitter)     | OAuth                    |[TzviPM](https://github.com/TzviPM)  |
 |[Azure Active Directory](https://github.com/AzureAD/passport-azure-ad)     | OAuth 2.0 / OpenID / SAML  |[Azure](https://github.com/azuread)  |
 
 ## Examples
 
 - For a complete, working example, refer to the [example](https://github.com/passport/express-4.x-local-example)
-that uses [passport-local](https://github.com/jaredhanson/passport-local).
+that uses [passport-local](https://github.com/TzviPM/next-passport-local).
 - **Local Strategy**: Refer to the following tutorials for setting up user authentication via LocalStrategy (`passport-local`):
     - Mongo
       - Express v3x - [Tutorial](http://mherman.org/blog/2016/09/25/node-passport-and-postgres/#.V-govpMrJE5) / [working example](https://github.com/mjhea0/passport-local-knex)
@@ -169,17 +137,17 @@ that uses [passport-local](https://github.com/jaredhanson/passport-local).
 
 ## Related Modules
 
-- [Locomotive](https://github.com/jaredhanson/locomotive) — Powerful MVC web framework
-- [OAuthorize](https://github.com/jaredhanson/oauthorize) — OAuth service provider toolkit
-- [OAuth2orize](https://github.com/jaredhanson/oauth2orize) — OAuth 2.0 authorization server toolkit
-- [connect-ensure-login](https://github.com/jaredhanson/connect-ensure-login)  — middleware to ensure login sessions
+- [Locomotive](https://github.com/TzviPM/locomotive) — Powerful MVC web framework
+- [OAuthorize](https://github.com/TzviPM/oauthorize) — OAuth service provider toolkit
+- [OAuth2orize](https://github.com/TzviPM/oauth2orize) — OAuth 2.0 authorization server toolkit
+- [connect-ensure-login](https://github.com/TzviPM/connect-ensure-login)  — middleware to ensure login sessions
 
-The [modules](https://github.com/jaredhanson/passport/wiki/Modules) page on the
-[wiki](https://github.com/jaredhanson/passport/wiki) lists other useful modules
+The [modules](https://github.com/TzviPM/next-passport/wiki/Modules) page on the
+[wiki](https://github.com/TzviPM/next-passport/wiki) lists other useful modules
 that build upon or integrate with Passport.
 
 ## License
 
 [The MIT License](http://opensource.org/licenses/MIT)
 
-Copyright (c) 2011-2021 Jared Hanson <[https://www.jaredhanson.me/](https://www.jaredhanson.me/)>
+Copyright (c) 2024 TzviPM <[https://www.tzvipm.dev/](https://www.tzvipm.dev/)>
