@@ -1,75 +1,22 @@
-import * as http from 'node:http';
+// import * as http from 'node:http';
 
-import {IncomingMessageExt} from '../http/request';
-import {AuthenticationError} from '../errors/authenticationerror';
+import {NextResponse} from 'next/server';
+import type {NextRequest} from 'next/server';
+
 import {Authenticator} from '../authenticator';
-import {User} from '../interfaces/user';
-import {Failure, Strategy} from '../interfaces/strategy';
-import {MiddlewareFunction, PassportRequest} from './types';
-import {ResponseType} from '../interfaces/http';
+import {AuthenticateOptions, Failure, Strategy} from '../interfaces/strategy';
+import {MiddlewareFunction} from './types';
+import {FlashType} from '../interfaces/session';
+import {AuthenticationError} from '../errors/authenticationerror';
 /**
  * Module dependencies.
  */
 // var http = require('http'),
 
-export type StrategySpecifier = Strategy | string | Array<Strategy | string>;
-
-export interface AuthenticateOptions {
-  /**
-   * Save login state in session, defaults to _true_
-   */
-  session?: boolean;
-
-  /**
-   * After successful login, redirect to given URL
-   */
-  successRedirect?: string;
-
-  /**
-   * True to store success message in req.session.messages, or a string to use as override message for success.
-   */
-  successMessage?: boolean | string;
-
-  /**
-   * True to flash success messages or a string to use as a flash message for success (overrides any from the strategy itself).
-   */
-  successFlash?: boolean | string;
-
-  /**
-   * After failed login, redirect to given URL
-   */
-  failureRedirect?: string;
-
-  /**
-   * True to store failure message in req.session.messages, or a string to use as override message for failure.
-   */
-  failureMessage?: boolean | string;
-
-  /**
-   * True to flash failure messages or a string to use as a flash message for failures (overrides any from the strategy itself).
-   */
-  failureFlash?: boolean | string;
-
-  /**
-   * Assign the object provided by the verify callback to given property
-   */
-  assignProperty?: string;
-
-  /**
-   * If true, the failureFlash option is not used for flash messages and remains available for your application to use.
-   */
-  failWithError?: boolean;
-
-  /**
-   * If false, the req.authInfo property is not populated.
-   */
-  authInfo?: boolean;
-
-  /**
-   * URL to redirect to if a user fails to log in, defaults to `successRedirect`
-   */
-  successReturnToOrRedirect?: string;
-}
+export type StrategySpecifier<U> =
+  | Strategy<U>
+  | string
+  | Array<Strategy<U> | string>;
 
 /**
  * The signature of a callback supplied to `authenticate`.
@@ -95,8 +42,13 @@ export interface AuthenticateOptions {
  *   })(req, res, next);
  * });
  */
-export interface AuthenticateCallback {
-  (err: Error | null, user?: User | false, info?: any, status?: any): void;
+export interface AuthenticateCallback<U> {
+  (
+    err: Error | null,
+    user?: U | false,
+    info?: any,
+    status?: any,
+  ): Promise<NextResponse>;
 }
 
 /**
@@ -124,32 +76,15 @@ export interface AuthenticateCallback {
  *     passport.authenticate('twitter');
  */
 
-function authenticate(
-  passport: Authenticator,
-  name: StrategySpecifier,
-  callback?: AuthenticateCallback,
-): MiddlewareFunction;
-function authenticate(
-  passport: Authenticator,
-  name: StrategySpecifier,
-  options: AuthenticateOptions,
-  callback?: AuthenticateCallback,
-): MiddlewareFunction;
-function authenticate(
-  passport: Authenticator,
-  name: StrategySpecifier,
-  optionsOrCallback?: AuthenticateOptions | AuthenticateCallback,
-  callback?: AuthenticateCallback,
+function authenticate<U, SU>(
+  passport: Authenticator<U, SU>,
+  name: StrategySpecifier<U>,
+  _options?: AuthenticateOptions,
+  callback?: AuthenticateCallback<U>,
 ): MiddlewareFunction {
-  let options!: AuthenticateOptions;
-  if (typeof optionsOrCallback == 'function') {
-    callback = optionsOrCallback;
-  } else if (optionsOrCallback) {
-    options = optionsOrCallback;
-  }
-  options ??= {};
+  const options = _options ?? {};
 
-  var multi = true;
+  let multi = true;
 
   // Cast `name` to an array, allowing authentication to pass through a chain of
   // strategies.  The first strategy to succeed, redirect, or error will halt
@@ -166,18 +101,7 @@ function authenticate(
     multi = false;
   }
 
-  return function authenticate(req, res, next) {
-    req.login = req.logIn = req.logIn || IncomingMessageExt.prototype.logIn;
-    req.logout = req.logOut = req.logOut || IncomingMessageExt.prototype.logOut;
-    req.isAuthenticated =
-      req.isAuthenticated || IncomingMessageExt.prototype.isAuthenticated;
-    req.isUnauthenticated =
-      req.isUnauthenticated || IncomingMessageExt.prototype.isUnauthenticated;
-    req.flash = req.flash || IncomingMessageExt.prototype.flash;
-
-    req._sessionManager = passport._sessionManager;
-
-    // accumulator for failures from each strategy in the chain
+  return function authenticate(req, event) {
     var failures: Failure[] = [];
 
     function allFailed() {
@@ -211,7 +135,7 @@ function authenticate(
             ? options.failureFlash
             : failure.challenge;
         if (typeof msg == 'string') {
-          req.flash?.('error', msg);
+          passport._sessionManager.setFlash(FlashType.ERROR, msg);
         }
       }
       if (options.failureMessage) {
@@ -220,12 +144,11 @@ function authenticate(
             ? options.failureMessage
             : failure.challenge;
         if (typeof msg == 'string') {
-          req.session.messages ??= [];
-          req.session.messages.push(msg);
+          passport._sessionManager.setMessage(msg);
         }
       }
       if (options.failureRedirect) {
-        return res.redirect(options.failureRedirect);
+        return NextResponse.redirect(options.failureRedirect);
       }
 
       // When failure handling is not delegated to the application, the default
@@ -245,21 +168,28 @@ function authenticate(
         }
       }
 
-      res.statusCode = rstatus ?? 401;
-      if (res.statusCode == 401 && rchallenge.length) {
-        res.setHeader('WWW-Authenticate', rchallenge);
+      const statusCode = rstatus ?? 401;
+      let headers = {};
+      if (statusCode === 401 && rchallenge.length) {
+        headers = {
+          headers: {
+            'WWW-Authenticate': rchallenge,
+          },
+        };
       }
+
       if (options.failWithError) {
-        return next(
-          new AuthenticationError(http.STATUS_CODES[res.statusCode]!, rstatus),
-        );
+        throw new AuthenticationError(String(statusCode), rstatus);
       }
-      res.end(http.STATUS_CODES[res.statusCode]);
+      return new NextResponse(undefined, {
+        status: statusCode,
+        ...headers,
+      });
     }
 
-    const names = name as Array<Strategy | string>;
+    const names = name as Array<Strategy<U> | string>;
 
-    function attempt(i: number) {
+    async function attempt(i: number) {
       var layer = names[i];
       // If no more strategies exist in the chain, authentication has failed.
       if (!layer) {
@@ -269,27 +199,18 @@ function authenticate(
       // Get the strategy, which will be used as prototype from which to create
       // a new instance.  Action functions will then be bound to the strategy
       // within the context of the HTTP request/response pair.
-      let strategy: Strategy;
-      let prototype: Strategy | undefined;
+      let strategy: Strategy<U>;
+      let prototype: Strategy<U> | undefined;
       if (isStrategy(layer)) {
         strategy = layer;
       } else {
         prototype = passport._strategy(layer);
         if (!prototype) {
-          return next(
-            new Error('Unknown authentication strategy "' + layer + '"'),
-          );
+          throw new Error('Unknown authentication strategy "' + layer + '"');
         }
 
         strategy = Object.create(prototype);
       }
-
-      // ----- BEGIN STRATEGY AUGMENTATION -----
-      // Augment the new strategy instance with action functions.  These action
-      // functions are bound via closure the the request/response pair.  The end
-      // goal of the strategy is to invoke *one* of these action methods, in
-      // order to indicate successful or failed authentication, redirect to a
-      // third-party identity provider, etc.
 
       augmentStrategy(
         strategy,
@@ -297,33 +218,42 @@ function authenticate(
         options,
         req,
         passport,
-        next,
-        res,
         failures,
         () => attempt(i + 1),
       );
 
-      // ----- END STRATEGY AUGMENTATION -----
-
-      strategy.authenticate(req, options);
+      const result = await strategy.authenticate(options);
+      return result;
     }
 
-    attempt(0);
+    let res!: NextResponse;
+
+    const promise = attempt(0).then(result => (res = result));
+
+    event.waitUntil(promise);
+
+    return res;
   };
 }
 
-function augmentStrategy(
-  strategy: Strategy,
-  callback: AuthenticateCallback | undefined,
+/**
+ *
+ * Augment the new strategy instance with action functions.  These
+ * action functions are bound via closure the the request/response
+ * pair. The endgoal of the strategy is to invoke *one* of these
+ * action methods, in order to indicate successful or failed
+ * authentication, redirect to a third-party identity provider, etc.
+ */
+function augmentStrategy<U, SU>(
+  strategy: Strategy<U>,
+  callback: AuthenticateCallback<U> | undefined,
   options: AuthenticateOptions,
-  req: PassportRequest,
-  passport: Authenticator,
-  next: (err?: Error | undefined) => void,
-  res: ResponseType,
+  req: NextRequest,
+  passport: Authenticator<U, SU>,
   failures: Failure[],
   attemptNext: () => void,
 ) {
-  strategy.success = function (user, info) {
+  strategy.success = async function (user, info) {
     if (callback) {
       return callback(null, user, info);
     }
@@ -334,7 +264,7 @@ function augmentStrategy(
       let msg =
         typeof options.successFlash === 'string' ? options.successFlash : info;
       if (typeof msg == 'string') {
-        req.flash?.('success', msg);
+        await passport._sessionManager.setFlash(FlashType.SUCCESS, msg);
       }
     }
     if (options.successMessage) {
@@ -343,71 +273,27 @@ function augmentStrategy(
           ? options.successMessage
           : info;
       if (typeof msg == 'string') {
-        req.session.messages ??= [];
-        req.session.messages.push(msg);
+        await passport._sessionManager.setMessage(msg);
       }
     }
-    if (options.assignProperty) {
-      req[options.assignProperty] = user;
-      if (options.authInfo !== false) {
-        passport.transformAuthInfo(info, req, function (err, tinfo) {
-          if (err) {
-            return next(err);
-          }
-          req.authInfo = tinfo;
-          next();
-        });
-      } else {
-        next();
+
+    await passport._sessionManager.logIn(user);
+
+    if (options.successReturnToOrRedirect) {
+      var url = options.successReturnToOrRedirect;
+      const returnTo = await passport._sessionManager.pluckReturnTo();
+      if (returnTo) {
+        url = returnTo;
       }
-      return;
+      return NextResponse.redirect(url);
     }
-
-    req.logIn?.(user, options, function (err) {
-      if (err) {
-        return next(err);
-      }
-
-      function complete() {
-        if (options.successReturnToOrRedirect) {
-          var url = options.successReturnToOrRedirect;
-          if (req.session && req.session.returnTo) {
-            url = req.session.returnTo;
-            delete req.session.returnTo;
-          }
-          return res.redirect(url);
-        }
-        if (options.successRedirect) {
-          return res.redirect(options.successRedirect);
-        }
-        next();
-      }
-
-      if (options.authInfo !== false) {
-        passport.transformAuthInfo(info, req, function (err, tinfo) {
-          if (err) {
-            return next(err);
-          }
-          req.authInfo = tinfo;
-          complete();
-        });
-      } else {
-        complete();
-      }
-    });
+    if (options.successRedirect) {
+      return NextResponse.redirect(options.successRedirect);
+    }
+    return NextResponse.next();
   };
 
-  /**
-   * Fail authentication, with optional `challenge` and `status`, defaulting
-   * to 401.
-   *
-   * Strategies should call this function to fail an authentication attempt.
-   *
-   * @param {String} challenge
-   * @param {Number} status
-   * @api public
-   */
-  strategy.fail = function (
+  strategy.fail = async function (
     challengeOrStatus: string | number,
     status?: number,
   ) {
@@ -424,31 +310,15 @@ function augmentStrategy(
     attemptNext();
   };
 
-  /**
-   * Redirect to `url` with optional `status`, defaulting to 302.
-   *
-   * Strategies should call this function to redirect the user (via their
-   * user agent) to a third-party website for authentication.
-   *
-   * @param {String} url
-   * @param {Number} status
-   * @api public
-   */
-  strategy.redirect = function (url, status) {
-    // NOTE: Do not use `res.redirect` from Express, because it can't decide
-    //       what it wants.
-    //
-    //       Express 2.x: res.redirect(url, status)
-    //       Express 3.x: res.redirect(status, url) -OR- res.redirect(url, status)
-    //         - as of 3.14.0, deprecated warnings are issued if res.redirect(url, status)
-    //           is used
-    //       Express 4.x: res.redirect(status, url)
-    //         - all versions (as of 4.8.7) continue to accept res.redirect(url, status)
-    //           but issue deprecated versions
-    res.statusCode = status || 302;
-    res.setHeader('Location', url);
-    res.setHeader('Content-Length', '0');
-    res.end();
+  strategy.redirect = async function (url, status) {
+    const statusCode = status || 302;
+    return NextResponse.redirect(url, {
+      status: statusCode,
+      headers: {
+        'Content-Length': '0',
+        Location: url,
+      },
+    });
   };
 
   /**
@@ -460,8 +330,8 @@ function augmentStrategy(
    *
    * @api public
    */
-  strategy.pass = function () {
-    next();
+  strategy.pass = async function () {
+    return NextResponse.next();
   };
 
   /**
@@ -474,17 +344,19 @@ function augmentStrategy(
    * @param {Error} err
    * @api public
    */
-  strategy.error = function (err) {
+  strategy.error = async function (err) {
     if (callback) {
       return callback(err);
     }
 
-    next(err);
+    throw err;
   };
 }
 
-function isStrategy(specifier: Strategy | string): specifier is Strategy {
-  return typeof (specifier as Strategy).authenticate == 'function';
+function isStrategy<U>(
+  specifier: Strategy<U> | string,
+): specifier is Strategy<U> {
+  return typeof (specifier as Strategy<U>).authenticate == 'function';
 }
 
 export {authenticate};

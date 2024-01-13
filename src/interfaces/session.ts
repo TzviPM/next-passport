@@ -1,16 +1,21 @@
-import {RequestType} from './http';
-
 export interface SessionOptions {
-  key?: string;
+  secret: string;
+  cookieName?: string;
 }
 
-export type Session = any;
+export enum FlashType {
+  ERROR = 'error',
+  SUCCESS = 'success',
+  INFO = 'info',
+}
 
-export type ManagedRequest = RequestType & {
-  session?: Session;
-};
-
-export interface LoginOptions {
-  session?: boolean;
-  keepSessionInfo?: boolean;
+export interface SessionData<SU> {
+  user?: SU;
+  flash?: {
+    [FlashType.ERROR]?: string;
+    [FlashType.SUCCESS]?: string;
+    [FlashType.INFO]?: string;
+  };
+  messages?: string[];
+  returnTo?: string;
 }
